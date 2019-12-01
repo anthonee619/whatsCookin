@@ -55,9 +55,10 @@ export default Hand;
 
 const StyleHand = styled.div `
   display: grid;
-  grid-template-rows: 5vh 20vh;
+  // grid-template-rows: 5vh 20vh;
   grid-template-areas: "submit" "card";
   grid-gap: 1rem;
+  width: 100vw;
 `
 
 const StyleSubmit = styled.button `

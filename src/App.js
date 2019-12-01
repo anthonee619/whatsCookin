@@ -1,23 +1,31 @@
 import React, { Component } from 'react';
-// import Navbar from './components/navbar'
-// import Card from './components/card';
-// import Counters from './components/counters';
+import { Router, Route, Link, IndexRoute, } from 'react-router';
 import Hand from './components/hand';
+import Home from './components/home';
 import styled from 'styled-components';
-import './App.css';
 
 class App extends Component{
   state = {}
 
+
   render() {
     return (
       <React.Fragment>
-      <StyledHand>
-        <Hand />
-      </StyledHand>
+        <Home />
       </React.Fragment>
     )
   }
+
+  // render() {
+  //   return (
+  //     <React.Fragment>
+  //     <StyledHand>
+  //       <Hand />
+  //     </StyledHand>
+  //     </React.Fragment>
+  //   )
+  // }
+
 }
 
 export default App;
