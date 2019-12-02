@@ -1,17 +1,17 @@
 import React, { Component } from 'react';
-import Logo from '../imgs/logo.png';
+import { Link } from "react-router-dom";
+import Logo from '../../imgs/logo.png';
 import styled from 'styled-components';
 
 class Home extends Component {
-  state = {}
 
   render() {
     return (
       <StyledHome>
         <StyledLogo src = { Logo } alt = "What's Cookin'" / >
         <StyledP>A Shining Star Games Production </StyledP>
-        <StyledA href="#">Rules</StyledA>
-        <StyledA href="#" primary>Play</StyledA>
+        <StyledA to="/about">Rules</StyledA>
+        <StyledA to="/joinGame" primary="true">Play</StyledA>
       </StyledHome>
     )
   }
@@ -21,7 +21,7 @@ export default Home
 const StyledHome = styled.div `
   display: grid;
   grid-template-areas: "logo logo" "p p" "rules play";
-  grid-gap: 10px;
+  grid-gap: 40px;
   justify-items: center;
   font-size: 2em;
 `;
@@ -35,7 +35,7 @@ const StyledP = styled.p`
   color: rebeccapurple;
 `
 
-const StyledA = styled.a`
+const StyledA = styled(Link)`
   color: ${props => props.primary ? "papayawhip" : "#7cc576" };
   background-color: ${props=> props.primary ? "#a389c0" : "inherit"};
   padding: 20px;
