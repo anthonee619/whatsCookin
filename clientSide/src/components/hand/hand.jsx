@@ -7,7 +7,7 @@ const Hand = ({ cards, onSelect }) => {
   const select = (card) => {
       let newCards = [...cards];
       let index = newCards.indexOf(card);
-      newCards[index].selected = card.selected===0?1:0;
+      newCards[index].selected = card.selected===1?0:1;
       onSelect(newCards);
   }
 
@@ -16,9 +16,9 @@ const Hand = ({ cards, onSelect }) => {
       <StyleCard
         length={cards.length}>
         {cards.map(card => (
-          <Card key={card.key}
+          <Card key={card.id}
             card = {card}
-            selected = {card.selected === 0? "none" : "blue"}
+            selected = {card.selected}
             onSelect= {select}
             />
 

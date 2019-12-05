@@ -1,22 +1,26 @@
+const PORT = process.env.PORT || 5000;
+//
 const express_lib = require('express');
 const http_lib = require('http');
 const path_lib = require('path');
 const socket_lib = require('socket.io');
 //
-const PORT = process.env.PORT || 5000;
 var app = express_lib();
 app.use(express_lib.static(path_lib.join(__dirname, 'public')));
 var http = http_lib.createServer(app);
 var io = socket_lib(http);
 //
-
-// app.get('/', function(request, response) {
-//   response.sendFile(__dirname + 'index.html');
-// });
-
+app.get('/', function(request, response) {
+  response.sendFile(__dirname + 'index.html');
+});
 //
 const CARDS_DEALT = [7, 3, 4, 5]; //7 initally, 3 after breakfast, 4 after lunch, 5 after dinner
 const CARD_LIMITS = [3, 4, 5]; //brekkie/lunch/dinner play limits
+const VOTE_VALUE = 2;
+
+var fs = require("fs");
+const CARD_DECK = fs.readFileSync("cards/data/cards.json", "utf8", 'r');
+console.log("ready");
 //
 var ids = {}; //Keeping track of all user ids and socket objects {socketid:socket}
 var names = {}; //Keeping track of all player names: {socketid:name}
@@ -98,13 +102,13 @@ io.on('connection', function(socket) {
     mark_ready(socketid, done);
   });
   socket.on('give cards', function(cards, recip_name) {
-    give_cards(socketid, cards, recip_name);
+    give_cards(socketid, JSON.parse(cards), recip_name);
   });
   socket.on('accept cards', function(giver_name) {
     give_cards(socketid, giver_name);
   });
   socket.on('set play hand', function(cards, description) {
-    set_play_hand(socketid, cards, description);
+    set_play_hand(socketid, JSON.parse(cards), description);
   });
   socket.on('vote hand', function(username) {
     vote_hand(socketid, username);
@@ -117,6 +121,7 @@ io.on('connection', function(socket) {
     lobby_disconnect(socketid);
   });
 });
+
 //
 function lobby_join(socket_id, name) {
   var check_ok = true;
@@ -233,10 +238,14 @@ function leave_game(socket_id) {
       remove_all_from_game(host);
       delete games[host];
     }
-    ids[socket_id].leave(host + "_game");
+    if (socket_id in ids) {
+      ids[socket_id].leave(host + "_game");
+    }
     delete ingame[socket_id];
   } else {
-    ids[socket_id].emit('error message', 204, "You aren't in any games right now!");
+    if (socket_id in ids) {
+      ids[socket_id].emit('error message', 204, "You aren't in any games right now!");
+    }
   }
 }
 
@@ -253,16 +262,15 @@ function start_game(socket_id) {
     if (!games[socket_id].started) {
       io.to(socket_id + "_game").emit('start game');
       io.to(socket_id + "_game").emit('chat message', "Game started!");
+      games[socket_id].deck = new_deck();
       games[socket_id].started = true;
-
+      games[socket_id].stage = true;
       //Deal with dealing!
       Object.keys(games[socket_id].players).forEach((p) => {
         deal_cards(p, CARDS_DEALT[0]);
       });
 
-      io.to(socket_id + "_game").emit('start day', 1);
-      io.to(socket_id + "_game").emit('start meal', 0);
-      io.to(socket_id + "_game").emit('start round', 1);
+      io.to(socket_id + "_game").emit('game state', { day: 1, meal: 0, round: 1 });
     } else {
       ids[socket_id].emit('error message', 202, "Cannot start a game that is already started!");
     }
@@ -323,7 +331,7 @@ function give_cards(socket_id, cards, recipient_name) {
             if (hand_subset(cards, games[host].players[socket_id].hand)) {
               if (cards.length > 0) {
                 cardoffers[socket_id] = new_offer_object(cards, recip_socket_id);
-                ids[recip_socket_id].emit('cards offered', cards, names[socket_id]);
+                ids[recip_socket_id].emit('cards offered', JSON.stringify(cards), names[socket_id]);
               } else {
                 delete cardoffers[socket_id];
               }
@@ -387,6 +395,7 @@ function set_play_hand(socket_id, cards, description) {
     var host = ingame[socket_id];
     if (games[host].started) {
       if (games[host].stage == 2) { //pick
+        console.log(cards)
         if (hand_subset(cards, games[host].players[socket_id].hand)) {
           if (cards.length <= CARD_LIMITS[games[host].round]) {
             games[host].players[socket_id].play_hand = cards;
@@ -522,7 +531,8 @@ function deal_cards(player, number) {
   var p_socket = ids[player];
   var new_hand = deck_deal(host, number);
   games[host].players[player].hand.concat(new_hand);
-  p_socket.emit('deal cards', new_hand);
+  games[host].players[player].hand = new_hand;
+  p_socket.emit('deal cards', JSON.stringify(new_hand));
 }
 
 function check_all_ready(host) { //Triggered when someone marks ready -- is everybody marked ready
@@ -534,7 +544,8 @@ function check_all_ready(host) { //Triggered when someone marks ready -- is ever
     }
   });
   if (check_ok) { //Everyone is ready
-    io.to(host + "_game").emit('start round', 2);
+    games[host].stage = 2;
+    io.to(host + "_game").emit('game state', { day: games[host].day, meal: games[host].round, round: 2 });
   }
 }
 
@@ -551,7 +562,11 @@ function check_all_played(host) {
       Object.keys(games[host].players).forEach((p) => {
         remove_cards_from_hand(p, games[host].players[p].play_hand);
       });
-      io.to(host + "_game").emit('start round', 3);
+      Object.keys(games[host].players).forEach((p) => {
+        ids[p].emit("player hand", JSON.stringify(games[host].players[p].hand))
+      });
+      games[host].stage = 3;
+      io.to(host + "_game").emit('game state', { day: games[host].day, meal: games[host].round, round: 3 });
     }
   }
 }
@@ -605,8 +620,7 @@ function end_meal(host) {
   if (games[host].round >= 3) { //Done with the day!
     end_day(host);
   } else {
-    io.to(host + "_game").emit('start meal', games[host].round);
-    io.to(host + "_game").emit('start round', 1); //Back to bartering!
+    io.to(host + "_game").emit('game state', { day: games[host].day, meal: games[host].round, round: 1 }); //Back to bartering!
     games[host].stage = 1;
   }
 
@@ -617,9 +631,7 @@ function end_day(host) {
   if (games[host].day > games[host].game_days) {
     end_game(host);
   } else {
-    io.to(host + "_game").emit('start day', games[host].day);
-    io.to(host + "_game").emit('start meal', 0);
-    io.to(host + "_game").emit('start round', 1); //Back to bartering!
+    io.to(host + "_game").emit('game state', { day: games[host].day, meal: 0, round: 1 }); //Back to bartering!
     games[host].round = 0; //Reset to breakfast!
     games[host].stage = 1; //Reset to bartering
   }
@@ -631,17 +643,31 @@ function end_game(host) {
     scores[p] = games[host].players[p].score;
   });
   io.to(host + "_game").emit('end game', scores);
+  leave_game(host);
 }
 
 function tally_score(hand, votes, meal) {
-  //TODO:THIS
-  return 42;
+  score = 0;
+  hand.forEach((card) => {
+    score += card.value[meal];
+  });
+  return score + (VOTE_VALUE * votes);
 }
 
 // --------------------//
 
 function new_deck() {
-  return []; //TODO: THIS
+  var j = JSON.parse(CARD_DECK);
+  var _id = 0;
+  var deck = [];
+  j.forEach((cardt) => {
+    for (var i = 0; i < cardt.count; ++i) {
+      deck.push({ id: _id++, name: cardt.name, type: cardt.type, value: cardt.value, mod_text: cardt.mod_text, mod: cardt.mod, img: cardt.img });
+    }
+  });
+
+  shuffle(deck);
+  return deck;
 }
 
 function new_game_object(game_name) {
@@ -667,5 +693,5 @@ function new_offer_object(cards, recipient) {
 }
 //
 http.listen(PORT, function() {
-  console.log(`Listening on *:${PORT}`);
+  console.log("Listening on *:" + PORT);
 });

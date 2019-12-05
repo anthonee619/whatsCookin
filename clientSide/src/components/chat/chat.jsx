@@ -29,6 +29,6 @@ const Construc = styled.span`
   clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
 `
 
-const ComingSoon = styled.p`
-
-`
+// const ComingSoon = styled.p`
+//
+// `

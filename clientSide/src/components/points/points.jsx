@@ -6,7 +6,7 @@ const Points = ({ points }) => {
     <PointsStyle>
       <h3>Leaderboard</h3>
       {points.map(point=>(
-        <Point>{point.player} score: {point.score}</Point>
+        <Point key={point.player}>{point.player} score: {point.score}</Point>
       ))}
     </PointsStyle>
   )

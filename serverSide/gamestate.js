@@ -24,5 +24,9 @@ class Gamestate {
       this.mealState = this.meals[0];
     }
   }
+
+  addPlayer(name) {
+    this.players.push({ name: name, cards: [], points: 0 });
+  }
 }
 module.exports = { Gamestate }

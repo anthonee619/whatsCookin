@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from "react-router-dom";
-import Logo from '../../imgs/logo.png';
+import whatsCookin from '../../imgs/whats_cookin.png';
 import styled from 'styled-components';
 
 class Home extends Component {
@@ -8,7 +8,7 @@ class Home extends Component {
   render() {
     return (
       <StyledHome>
-        <StyledLogo src = { Logo } alt = "What's Cookin'" / >
+        <StyledLogo src = { whatsCookin } alt = "What's Cookin'" / >
         <StyledP>A Shining Star Games Production </StyledP>
         <StyledA to="/about">Rules</StyledA>
         <StyledA to="/joinGame" primary="true">Play</StyledA>

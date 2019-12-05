@@ -5,17 +5,16 @@ import Home from './components/home/home';
 import JoinGame from './components/joinGame/joinGame';
 import About from './components/about/about';
 import Game from './components/game/game';
-// import styled from 'styled-components';
 
 class App extends Component{
   render() {
     return (
       <Router>
         <Switch>
-          <Route exact path= "/"> <Home /> </Route>
-          <Route path="/joinGame"> <JoinGame /> </Route>
-          <Route path="/about"> <About /> </Route>
-          <Route path="/game"> <Game /></Route>
+          <Route exact path= "/" component={Home}/>
+          <Route path="/joinGame" component= {JoinGame}/>
+          <Route path="/about" component= {About }/>
+          <Route path="/game" component= {Game}/>
         </Switch>
       </Router>
     )
@@ -23,10 +22,3 @@ class App extends Component{
 }
 
 export default App;
-
-// const StyledHand = styled.div`
-//   background: papayawhip;
-//   position: fixed;
-//   bottom:0;
-//   left:0;
-// `;
