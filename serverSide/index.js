@@ -73,51 +73,66 @@ io.on('connection', function(socket) {
   });
 
   socket.on('lobby join', function(name) {
+	console.log("lobby join ("+name+")");
     lobby_join(socketid, name);
   });
   socket.on('request players', function() {
+	console.log("request players ("+")");
     list_players(socketid);
   });
   socket.on('request games', function() {
+	console.log("request games ()");
     list_games(socketid);
   });
 
   socket.on('host game', function(game_name) {
+	console.log("host game ("+game_name+")");
     create_game(socketid, game_name);
   });
   socket.on('join game', function(game_name) {
+	console.log("join game ("+game_name+")");
     join_game(socketid, game_name);
   });
   socket.on('leave game', function() {
+	console.log("leave game ("+")");
     leave_game(socketid);
   });
   socket.on('start game', function() {
+	console.log("start game ()");
     start_game(socketid);
   });
   socket.on('set game settings', function(settings) {
+	console.log("set game settings ("+JSON.stringify(settings)+")");
     change_game_settings(socketid, settings);
   });
 
   socket.on('set done bartering', function(done) {
+console.log("set done bartering ("+done+")");
     mark_ready(socketid, done);
   });
   socket.on('give cards', function(cards, recip_name) {
+	console.log("give cards ("+cards + "," + recip_name+")");
     give_cards(socketid, JSON.parse(cards), recip_name);
   });
   socket.on('accept cards', function(giver_name) {
+	  console.log("accept cards ("+giver_name +")");
     give_cards(socketid, giver_name);
   });
   socket.on('set play hand', function(cards, description) {
+	  console.log("set play hand ("+cards+","+description+")");
     set_play_hand(socketid, JSON.parse(cards), description);
   });
   socket.on('vote hand', function(username) {
+	  console.log("vote hand ("+username+")");
     vote_hand(socketid, username);
   });
 
   socket.on('name change', function(new_name) {
+	console.log("name change ("+new_name+")");
     change_name(socketid, new_name);
   });
   socket.on('disconnect', function(socket) {
+	console.log("disconnect ("+socketid+")");
     lobby_disconnect(socketid);
   });
 });
@@ -269,7 +284,7 @@ function start_game(socket_id) {
       Object.keys(games[socket_id].players).forEach((p) => {
         deal_cards(p, CARDS_DEALT[0]);
       });
-
+	  console.log("Starting game!");
       io.to(socket_id + "_game").emit('game state', { day: 1, meal: 0, round: 1 });
     } else {
       ids[socket_id].emit('error message', 202, "Cannot start a game that is already started!");
@@ -475,7 +490,13 @@ function name_lookup(username) { //Returns socket
 
 function hand_subset(sub, main) {
   return sub.every((card) => {
-    main.includes(card)
+    for (var i = 0; i < main.length; ++i) {
+		var c = main[i];
+		if (card.id == c.id && card.type == c.type && card.value == c.value && card.mod == c.mod && card.img == c.img) {
+			return true;
+		}
+	}
+	return false;
   });
 }
 
@@ -545,6 +566,7 @@ function check_all_ready(host) { //Triggered when someone marks ready -- is ever
   });
   if (check_ok) { //Everyone is ready
     games[host].stage = 2;
+	console.log("Everyone has marked ready -- go to play stage");
     io.to(host + "_game").emit('game state', { day: games[host].day, meal: games[host].round, round: 2 });
   }
 }
@@ -566,6 +588,7 @@ function check_all_played(host) {
         ids[p].emit("player hand", JSON.stringify(games[host].players[p].hand))
       });
       games[host].stage = 3;
+	  console.log("Everyone has played -- go to voting");
       io.to(host + "_game").emit('game state', { day: games[host].day, meal: games[host].round, round: 3 });
     }
   }
@@ -620,6 +643,7 @@ function end_meal(host) {
   if (games[host].round >= 3) { //Done with the day!
     end_day(host);
   } else {
+	  console.log("The meal is over -- next meal!");
     io.to(host + "_game").emit('game state', { day: games[host].day, meal: games[host].round, round: 1 }); //Back to bartering!
     games[host].stage = 1;
   }
@@ -631,6 +655,7 @@ function end_day(host) {
   if (games[host].day > games[host].game_days) {
     end_game(host);
   } else {
+	console.log("The day is over! -- Next day");
     io.to(host + "_game").emit('game state', { day: games[host].day, meal: 0, round: 1 }); //Back to bartering!
     games[host].round = 0; //Reset to breakfast!
     games[host].stage = 1; //Reset to bartering
@@ -642,6 +667,7 @@ function end_game(host) {
   Object.keys(games[host].players).forEach((p) => {
     scores[p] = games[host].players[p].score;
   });
+  console.log("Game over");
   io.to(host + "_game").emit('end game', scores);
   leave_game(host);
 }
