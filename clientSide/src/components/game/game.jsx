@@ -58,7 +58,6 @@ const Game = () => {
       setGameState(state);
     })
 
-
     return () => {
       socket.emit('disconnect');
       socket.off();

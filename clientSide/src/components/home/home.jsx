@@ -9,8 +9,11 @@ class Home extends Component {
     return (
       <StyledHome>
         <StyledLogo src = { whatsCookin } alt = "What's Cookin'" / >
-        <StyledP>A Shining Star Games Production </StyledP>
-        <StyledA to="/about">Rules</StyledA>
+        <StyledP>
+          A Shining Star Games Production <br />
+        <About to="/about">ABOUT US</About>
+        </StyledP>
+        <StyledA to="">Rules</StyledA>
         <StyledA to="/joinGame" primary="true">Play</StyledA>
       </StyledHome>
     )
@@ -31,6 +34,7 @@ const StyledLogo = styled.img `
 `;
 
 const StyledP = styled.p`
+  text-align: center;
   grid-area: p;
   color: rebeccapurple;
 `
@@ -52,3 +56,12 @@ const StyledA = styled(Link)`
     text-decoration: none;
   }
 `;
+
+const About = styled(Link)`
+  font-size: .5em;
+  color: #f26c4f;
+
+  &:hover{
+    font-size: .55em;
+  }
+`
