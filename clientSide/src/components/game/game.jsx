@@ -8,12 +8,8 @@ import Board from '../board/board';
 import Points from '../points/points';
 import styled from 'styled-components';
 
-const hand = [{key: 1, selected: 0, path: "avocado.png"},
-     {key: 2, selected: 0, path: "bread.png"},
-     {key: 3, selected: 0, path: "bread.png"},
-     {key: 4, selected: 0, path: "bread.png"},
-     {key: 5, selected: 0, path: "bread.png"},
-     {key: 6, selected: 0, path: "butter.png"}];
+const meals = ['breakfast', 'lunch', 'dinner'];
+const buttonStates = ['', 'Send Hand to another player', 'Submit Hand', 'Vote for player']
 
 let socket;
 
@@ -23,10 +19,9 @@ const Game = () => {
   const [isHost, setIsHost] = useState('');
   const [clicked, setClicked] = useState(false);
   const [players, setPlayers] = useState([]);
-  const [gameState, setGameState] = useState({});
+  const [gameState, setGameState] = useState({day: 1, meal: 0, round: 0});
   const [points, setPoints] = useState([])
   const [cards, setCards] = useState([]);
-  const [hand, setHand] = useState([]);
   const [description, setDescription] = useState('');
   const ENDPOINT = "localhost:5000";
 
@@ -49,7 +44,6 @@ const Game = () => {
     if(isHost === 'true') {
       socket.emit('host game', room);
     } else {
-      console.log("joining game");
       socket.emit('join game', room);
     }
 
@@ -63,6 +57,7 @@ const Game = () => {
       setGameState(state);
     })
 
+
     return () => {
       socket.emit('disconnect');
       socket.off();
@@ -70,19 +65,23 @@ const Game = () => {
 
   }, [ENDPOINT, location.search]);
 
-  useEffect(() => {
+  useEffect(()=> {
+    socket.on('new player', playerList => {
+      setPlayers(playerList);
+    });
 
     socket.on('deal cards', hand => {
       setCards(JSON.parse(hand));
     })
 
     socket.on('game state', state => {
-      console.log('changing state', state);
       setGameState(state);
+    }, [players, cards, gameState])
+
+    socket.on('player hands', player => {
+      setPlayers(player)
     })
-
-  })
-
+  },[players, cards, gameState]);
 
   const startGame = () => {
     if (!clicked) {
@@ -93,10 +92,7 @@ const Game = () => {
   }
 
   const sendCards = () => {
-    let hand = cards.filter((card)=>card.selected).map(card => {
-      delete card.selected;
-      return card;
-    });
+    let hand = cards.filter((card)=>card.selected );
 
     if (gameState.round === 1) {
       // send hand to barter;
@@ -123,8 +119,10 @@ const Game = () => {
 
   return (
     <StyledDiv>
-      <State>{gameState.day} , {gameState.meal}</State>
-      {(isHost==='true') ? <Start onClick={startGame}>Start Game</Start> : <Start></Start> }
+      <State>
+        Day: {gameState.day} currently having {meals[gameState.meal]}
+      </State>
+      {(isHost==='true') ? <Start onClick={startGame}>Start Game</Start> : <span></span> }
       <Grid>
         <Points area="points" points={points}></Points>
       </Grid>
@@ -138,11 +136,16 @@ const Game = () => {
           round = {gameState.round} ></Board>
       </Grid>
       <HandGrid area="hand">
+        {(gameState.round === 2) ? (
         <StyledInput placeholder="Explain your dish!"></StyledInput>
-        <SubmitHand onClick={sendCards}>Submit Hand</SubmitHand>
+        ): null}
+        <SubmitHand
+          onClick={sendCards}>
+          {buttonStates[gameState.round]}
+        </SubmitHand>
         <Hand
           cards={cards}
-          onSelect={setHand}
+          onSelect={setCards}
           ></Hand>
       </HandGrid>
     </StyledDiv>
@@ -160,6 +163,8 @@ const StyledDiv = styled.div`
                  "hand hand" 1fr
                  / 3fr 7fr;
   height: 100vh;
+  width: 98vw;
+  margin: auto;
 `
 const Start = styled.button`
   grid-area: next;

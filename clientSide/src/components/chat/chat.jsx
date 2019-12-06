@@ -2,11 +2,15 @@ import React from 'react';
 import styled from 'styled-components';
 
 const Chat = () => {
+
   return (
     <StyledChat>
-      <Construc>
-      </Construc>
-      Chat Coming Soon...
+      <ChatTitle>Chat Box</ChatTitle>
+      <MessageBox></MessageBox>
+      <TypeMessage>
+        <MessageInput placeholder="type your message"></MessageInput>
+        <SendMessage >Send</SendMessage>
+      </TypeMessage>
     </StyledChat>
   )
 };
@@ -14,21 +18,41 @@ export default Chat;
 
 const StyledChat = styled.div`
   display:grid;
+  grid-template:
+  "chat" auto
+  "message" 4fr
+  "typeMessage" 1fr;
   background-color: white;
   border-radius: 1em;
-  height: 95%;
-  width: 95%;
-  margin: auto;
+  height:100%;
 `
 
-const Construc = styled.span`
-  background-color: orange;
-  height: 100%;
-  width: 100%;
-  -webkit-clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+const ChatTitle = styled.h4 `
+  grid-area: chat;
+  justify-content: center;
+  border-bottom: 1px solid black;
 `
 
-// const ComingSoon = styled.p`
-//
-// `
+const MessageBox = styled.div`
+
+`
+const TypeMessage = styled.div`
+  display: grid;
+  grid-template:
+  "messageInput" 1fr
+  "send" 1fr;
+
+  border-top:1px solid black;
+
+
+`
+
+const MessageInput = styled.input`
+  grid-area: messageInput;
+
+`
+
+const SendMessage = styled.button`
+  grid-area: send;
+
+`

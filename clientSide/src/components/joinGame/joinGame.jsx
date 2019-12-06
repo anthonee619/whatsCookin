@@ -15,16 +15,21 @@ const JoinGame = () => {
   useEffect(() => {
     socket = io(ENDPOINT);
     socket.emit('request games');
-    socket.on('response games', servers => {
-      setServer(servers);
+    socket.on('response games', serverL => {
+        setServer(serverL);
     });
 
     return () => {
       socket.emit('disconnect');
       socket.off();
     }
-  });
+  }, []);
 
+  useEffect(()=> {
+    socket.on('response games', serverL => {
+        setServer(serverL);
+    });
+  },[servers])
 
   return (
     <Wrap>

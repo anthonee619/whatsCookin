@@ -1,17 +1,24 @@
 import React from 'react';
 import Barter from './barter';
 import Vote from './vote';
+import PreGame from './pregame';
+import Pick from './pick';
 import styled from 'styled-components';
 
 const Board = ({round, nextRound, players}) => {
   return (
     <StyledBoard>
-      <h1>Board Component</h1>
+      <PreGame
+        round={round}
+        players={players}></PreGame>
       <Barter
         players= {players}
         round={round}
         ></Barter>
-      <Vote round={round}></Vote>
+      <Pick round={round}/>
+      <Vote
+        players={players}
+        round={round}></Vote>
       <button onClick={nextRound}>Next Stage</button>
     </StyledBoard>
   );
@@ -19,5 +26,14 @@ const Board = ({round, nextRound, players}) => {
 export default Board;
 
 const StyledBoard = styled.div`
+  display: grid;
+  grid-template: "." 1fr
+                 "nextRound" auto;
+  height: 100%;
+  margin-left: 10px;
+`
+
+const nextRound = styled.button `
+  grid-area: nextRound;
 
 `
