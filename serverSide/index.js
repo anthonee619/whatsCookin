@@ -622,7 +622,13 @@ function check_all_played(host) {
 }
 
 function getPlayerHands(host) {
-  io.emit('player hands', games[host].players);
+  let playerHands = [];
+  let player;
+  for (player in games[host].players) {
+    playerHands.push({ player, username: names[player], play_hand: games[host].players[player].play_hand, play_description: games[host].players[player].play_description })
+  }
+  console.log(playerHands)
+  io.emit('player hands', playerHands);
 }
 
 

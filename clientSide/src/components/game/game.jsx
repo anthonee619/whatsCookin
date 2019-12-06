@@ -19,6 +19,7 @@ const Game = () => {
   const [isHost, setIsHost] = useState('');
   const [clicked, setClicked] = useState(false);
   const [players, setPlayers] = useState([]);
+  const [playerHands, setPlayerHands] = useState([]);
   const [gameState, setGameState] = useState({day: 1, meal: 0, round: 0});
   const [points, setPoints] = useState([])
   const [cards, setCards] = useState([]);
@@ -78,8 +79,8 @@ const Game = () => {
       setGameState(state);
     }, [players, cards, gameState])
 
-    socket.on('player hands', player => {
-      setPlayers(player)
+    socket.on('player hands', playerHands => {
+      setPlayerHands(playerHands)
     })
   },[players, cards, gameState]);
 
@@ -133,6 +134,7 @@ const Game = () => {
         <Board
           nextRound={nextRound}
           players={players}
+          playerHands={playerHands}
           round = {gameState.round} ></Board>
       </Grid>
       <HandGrid area="hand">

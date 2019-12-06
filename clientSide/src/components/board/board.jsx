@@ -5,7 +5,7 @@ import PreGame from './pregame';
 import Pick from './pick';
 import styled from 'styled-components';
 
-const Board = ({round, nextRound, players}) => {
+const Board = ({round, nextRound, players, playerHands}) => {
   return (
     <StyledBoard>
       <PreGame
@@ -17,7 +17,7 @@ const Board = ({round, nextRound, players}) => {
         ></Barter>
       <Pick round={round}/>
       <Vote
-        players={players}
+        playerHands={playerHands}
         round={round}></Vote>
       <button onClick={nextRound}>Next Stage</button>
     </StyledBoard>

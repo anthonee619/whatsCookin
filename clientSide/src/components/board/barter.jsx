@@ -16,7 +16,7 @@ const Barter = ({round, players}) => {
           {players.map(player => (
             <div>
                 <h5 key={player.socket_id}>{player.username}</h5>
-                <Chat />
+                <Chat key={player.socket_id + player.socket_id}/>
             </div>
           ))}
         </Players>
