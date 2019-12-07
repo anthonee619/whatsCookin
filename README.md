@@ -7,7 +7,7 @@ installed on your computer.
 
 2.) In a terminal cd to './whats-cookin/clientSide'
 
-3) run 'npm install'
+3.) run 'npm install'
 
 4.) Once the install has finished, run 'npm start' in the terminal
 
