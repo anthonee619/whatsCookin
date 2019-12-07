@@ -18,7 +18,7 @@ express server will not function until that is running.
 
 5.) In another terminal cd to './whats-cookin/serverSide'
 
-6) run 'npm install'
+6.) run 'npm install'
 
 7.) run 'npm start' in the terminal
 
